@@ -1,0 +1,35 @@
+esd:
+  aop:
+    excludePaths:
+      - src/Libs
+      - src/Filters
+      - src/Views
+      - src/Assets
+
+  logger:
+    level: DEBUG
+
+  profiles:
+    active: local
+
+  server:
+    name: esd-gateway
+    workerNum: 4
+    maxConn: 65535
+    maxCoroutine: 100000
+    debug: true
+
+  port:
+    http:
+      host: 0.0.0.0
+      port: 7011
+      openHttpProtocol: true
+      sock_type: 1
+
+    tcp:
+      host: 0.0.0.0
+      port: 7033
+      openHttpProtocol: false
+      openWebsocketProtocol: false
+      sockType: 1
+      packTool: 'App\Plugins\Pack\PackTool\StreamPack'
