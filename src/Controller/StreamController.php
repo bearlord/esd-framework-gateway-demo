@@ -60,16 +60,14 @@ class StreamController extends GoController
         $fd = $this->clientData->getFd();
         $data = $this->clientData->getData();
 
-//        var_dump($fd, $data);
-
         try {
-            $connectionActor = Actor::getProxy("connection-" . $fd, true);
+            $connectionActor = Actor::getProxy("connection-" . $fd, false);
 
             if (!empty($connectionActor)) {
                 $connectionActor->setData([
                     'fd' => $fd,
                     'client_data' => $data,
-                    'last_communication_id' => time(),
+                    'last_communication_time' => time(),
                     'remote_ip' => $this->clientData->getClientInfo()->getRemoteIp(),
                     'remote_port' => $this->clientData->getClientInfo()->getRemotePort()
                 ]);
@@ -78,7 +76,7 @@ class StreamController extends GoController
             $connectionActor = Actor::create(ConnectionActor::class, "connection-" . $fd, [
                 'fd' => $fd,
                 'client_data' => $data,
-                'last_communication_id' => time(),
+                'last_communication_time' => time(),
                 'remote_ip' => $this->clientData->getClientInfo()->getRemoteIp(),
                 'remote_port' => $this->clientData->getClientInfo()->getRemotePort()
             ]);

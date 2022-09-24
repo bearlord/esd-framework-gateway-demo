@@ -16,17 +16,13 @@ class ConnectionActor extends Actor
     protected $data = [
         'fd' => null,
         'server_ip' => '',
-        'last_communication_id' => '',
+        'last_communication_time' => '',
         'client_data' => null,
         'remote_ip' => '',
         'remote_port' => '',
-        'server_node' => ''
     ];
 
-    protected function setServerNode($node)
-    {
-        $this->data['server_node'] = $node;
-    }
+    protected $serverNode;
 
     public function getNodes()
     {
@@ -44,15 +40,14 @@ class ConnectionActor extends Actor
         ];
     }
 
-    public function selectNode()
+    public function designatedNode()
     {
-        if (!empty($this->data['server_node'])) {
-            return $this->data['server_node'];
+        if (!empty($this->serverNode)) {
+            return $this->serverNode;
         }
 
-        $index = mt_rand(0, 1);
-        $node = $this->getNodes()[$index];
-        $this->data['server_node'] = $node;
+        $node = $this->getNodes()[array_rand($this->getNodes())];
+        $this->serverNode = $node;
         return $node;
     }
 
@@ -60,19 +55,15 @@ class ConnectionActor extends Actor
     public function proxyForward()
     {
         $nodes = $this->getNodes();
-        $selectNode = $this->selectNode();
+        $designatedNode = $this->designatedNode();
         $client = new ServiceClient([
             'serviceName' => 'TcpDataService',
             'nodes' => $nodes,
+//            'node' => $designatedNode,
             'protocol' => Protocol::PROTOCOL_JSON_RPC,
         ]);
 
         printf("gateway start rpc request\n");
-        $client->getClient()->getTransporterInstance()->setNode([
-            'schema' => '',
-            'host' => $selectNode['host'],
-            'port' => $selectNode['port'],
-        ]);
         $res = $client->request("process", [
             'fd' => $this->data['fd'],
             'clientData' => $this->data['client_data'],
