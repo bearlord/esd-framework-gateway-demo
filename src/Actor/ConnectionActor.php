@@ -24,6 +24,8 @@ class ConnectionActor extends Actor
 
     protected $serverNode;
 
+    protected $heartbeated = false;
+
     public function getNodes()
     {
         return [
@@ -52,32 +54,53 @@ class ConnectionActor extends Actor
     }
 
 
-    public function proxyForward()
+    public function proxyForward($data)
     {
         $nodes = $this->getNodes();
         $designatedNode = $this->designatedNode();
         $client = new ServiceClient([
             'serviceName' => 'TcpDataService',
             'nodes' => $nodes,
-//            'node' => $designatedNode,
+            'node' => $designatedNode,
             'protocol' => Protocol::PROTOCOL_JSON_RPC,
         ]);
 
-        printf("gateway start rpc request\n");
         $res = $client->request("process", [
             'fd' => $this->data['fd'],
-            'clientData' => $this->data['client_data'],
+            'clientData' => $data,
             'remoteIp' => $this->data['remote_ip'],
             'remotePort' => $this->data['remote_port'],
 
         ]);
         $response = sprintf("gateway print rpc result: %s\n", $res);
         Server::$instance->send($this->data['fd'], $response);
+
+        if (!$this->heartbeated) {
+            $this->initHeartBeat();
+            $this->heartbeated = true;
+        }
     }
 
+    public function initHeartBeat()
+    {
+        //10秒一个心跳包
+        $this->tick(10 * 1000, function (){
+            $this->heartBeatCallback('heartbeart');
+        });
+    }
 
+    protected function heartBeatCallback($data)
+    {
+        Server::$instance->getLog()->critical("heartbeat");
+        Server::$instance->send($this->data['fd'], $data);
+    }
+
+    /**
+     * @param ActorMessage $message
+     * @return mixed|void
+     */
     protected function handleMessage(ActorMessage $message)
     {
-        // TODO: Implement handleMessage() method.
+        $this->proxyForward($message->getData());
     }
 }

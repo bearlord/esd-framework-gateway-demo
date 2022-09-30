@@ -2,12 +2,12 @@
 
 namespace App;
 
-use App\Plugins\Demo\DemoPlugin;
 use ESD\Go\GoApplication;
 use ESD\Plugins\Actor\ActorConfig;
 use ESD\Plugins\Actor\ActorPlugin;
 use ESD\Plugins\Amqp\AmqpConsumerPlugin;
 use ESD\Plugins\Amqp\AmqpPlugin;
+use ESD\Plugins\Cloud\Gateway\GatewayApplication;
 use ESD\Plugins\Scheduled\ScheduledPlugin;
 use ESD\Yii\Plugin\Mongodb\MongodbPlugin;
 use ESD\Yii\Plugin\Pdo\PdoPlugin;
@@ -24,7 +24,8 @@ class Application
      */
     public static function main()
     {
-        $goApp = new GoApplication();
+//        $goApp = new GoApplication();
+        $goApp = new GatewayApplication();
 
         $goApp->addPlugin(new ActorPlugin());
 
